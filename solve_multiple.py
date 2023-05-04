@@ -16,8 +16,8 @@ DRAW = (WIN+LOSE) / 2
 # 方程组部分
 init_val = DRAW
 # 保存方程组解的结果
-# v = init_val * np.ones((k+1, k+1)) # 全部标记为未知
-v = np.random.random((k+1, k+1))
+v = init_val * np.ones((k+1, k+1)) # 全部标记为未知
+# v = np.random.random((k+1, k+1)) # TODO: 这样写的随机性更高，但每次输出结果都不同
 new_v = -np.ones((k+1, k+1)) # 全部标记为unused
 p = -np.ones((k+1, k+1), dtype=object) # 全部标记为unused
 # 求解方程组
@@ -61,12 +61,14 @@ def update_v_and_p(state):
 
 def set_a(state):
 	if True:
-		set_a_lose() # 遇到犯规攻击的行为，直接判输
+		set_a_lose(state) # 遇到犯规攻击的行为，直接判输
 	else:
-		set_a_defence() # 遇到犯规攻击的行为，判定为defence，而攻击无效
-	# 两者效果是一样的
+		set_a_defence(state) # 遇到犯规攻击的行为，判定为defence，而攻击无效
+	# 采用线性规划时，并不要求对方在各个动作下的v值都相等，因此也可以将对方犯规动作的情况纳入考虑，而不需要跳过
+	# 两者收敛效果是一样的。但前者更好，因为这样的话求解时会自动使得犯规攻击的概率为0，输出p显得更清晰
+	# 后者的话，犯规攻击会分走一部分defence的概率，显得比较乱。其实本质也是defence
 
-def set_a_lose():
+def set_a_lose(state):
 	a_temp = np.ones((num_actions, num_actions))
 
 	for action_a_index, action_a in enumerate(actions):
@@ -127,8 +129,7 @@ def set_a_lose():
 	# 	[0, v[1,0], v[2,0]],
 	# 	[v[3,1], v[1,1], v[2,1]]
 
-def set_a_defence():
-	def set_a(state):
+def set_a_defence(state):
 	a_temp = np.ones((num_actions, num_actions))
 
 	for action_a_index, action_a in enumerate(actions):
