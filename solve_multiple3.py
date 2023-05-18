@@ -364,27 +364,30 @@ def main():
 	print_v_and_p(no_defence=(1,0))
 
 	# 直接通过(1,0)对称得到整个v的结果
+	'''
 	for state_a in range(k+1):
 		for state_b in range(k+1):
 			v[(0,1)][(state_a, state_b)] = WIN + LOSE - v[(1,0)][(state_b, state_a)]
+	'''
+	# 还需要得到通过求解，得到p的结果
+	bobozan(no_defence=(0,1))
 	# 下三角的v的值是WIN，而p的值如下
-	for state_b in range(k):
+	for state_b in range(k): # 如果还是求解了下三角的v、p，则此时修补下三角的p的值
 		for state_a in range(state_b+1, k):
 			if state_a < min_action_attack_energy_cost: 
 				p[(0,1)][(state_a, state_b)] = [1,0] # 只能吸
 			else:
-				p[(0,1)][(state_a, state_b)] = [0,1] # 采取最强攻击
+				p[(0,1)][(state_a, state_b)] = [0,1] # 采取最强攻击，肯定就能赢 TODO：不进行修补的话，也能赢，但可能比较“浪”
 	for state_a in range(k): # 修补对角线上p的值
 		if state_a < min_action_attack_energy_cost: 
 			p[(0,1)][(state_a, state_a)] = [1,0] # 只能吸
 		else:
 			p[(0,1)][(state_a, state_a)] = [0,1] # 准确地说是采取最强攻击的概率趋近于1
-	# 还需要得到通过求解，得到p的结果
-	bobozan(no_defence=(0,1))
 	# TODO：如果只求解下三角的话，还需要求解上三角的p的值
 	print_v_and_p(no_defence=(0,1))
 
 	# 3. 再解决最复杂的：双方未破防
+	v[(0,0)][(k,k)] = DRAW # 也已知，但是计算过程用不到，只需要最后输出结果
 	bobozan(no_defence=(0,0)) 
 	# 如果只求解下三角的话，还需要补全上三角的v
 	# TODO：还需要求解上三角的p
@@ -400,5 +403,14 @@ def main():
 	# 这样不对？需要写一个get_v函数，来把上三角的内容自动转化为下三角？
 	# 但是从之前的经验来看，结果对角线的v和p也是对的？
 
+	'''
+	一条简单的验证
+	可以想见 如果双方的破防状态相同
+	在下三角区中 对方有气可以攻击的时候 即不是第一列的情况 自己吸气的概率一定小于50%
+	否则若大于等于50% 则对方的策略可以优化成100%攻击，则有大于等于50%的概率获胜
+	而下三角区我方应该占优势才对
+	事实上 算出来上三角区吸气的概率往往也低于50%
+	'''
+	
 if __name__ == '__main__':
 	main()
